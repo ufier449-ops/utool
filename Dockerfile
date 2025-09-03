@@ -1,6 +1,9 @@
 # Usar la imagen oficial de Playwright con Python
 FROM mcr.microsoft.com/playwright/python:v1.55.0-jammy
 
+# Deshabilitar el buffer de salida de Python para que los prints aparezcan en los logs en tiempo real
+ENV PYTHONUNBUFFERED=1
+
 # Establecer el directorio de trabajo
 WORKDIR /app
 
