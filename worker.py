@@ -151,8 +151,8 @@ def trigger_immediate_change():
     """Main function to be called by the webhook."""
     print("--- Immediate Change Triggered ---")
     accounts = load_json_file(ACCOUNTS_FILE)
-    config = load_json_file(CONFIG_FILE)
-    api_key = config.get("api_key")
+    # On Render, the API key is read from an environment variable for security
+    api_key = os.environ.get("2CAPTCHA_API_KEY")
 
     if not accounts:
         print("No accounts found in accounts.json. Nothing to do.")
