@@ -1,0 +1,20 @@
+Bloqueo de 6 Horas (Anti-Error Humano)
+
+¿Qué hace? Impide que se pueda iniciar un "Cambio Inmediato" si el último cambio exitoso fue hecho por un usuario hace menos de 6 horas. También previene que la app inicie un ciclo automático si se encuentra en este período de bloqueo.
+Propósito: Evitar cambios de contraseña demasiado frecuentes que puedan ser accidentales o innecesarios.
+Código Clave: La lógica se encuentra principalmente en las funciones check_and_auto_change y trigger_immediate_change.
+Inicio 100% Automático
+
+¿Qué hace? Al abrir la aplicación, esta automáticamente comprueba si debe iniciar un ciclo de cambio o si debe esperar (respetando el bloqueo de 6 horas). No necesitas presionar "Iniciar".
+Propósito: Hacer la aplicación más autónoma y fácil de usar.
+Código Clave: La llamada a app.check_and_auto_change() al final del script.
+Ejecución en Segundo Plano (Bandeja del Sistema)
+
+¿Qué hace? Al presionar el botón "Ocultar" o la 'X' de la ventana, la aplicación desaparece de la vista y se queda funcionando como un icono en la bandeja del sistema (al lado del reloj).
+Propósito: Permitir que el programa se ejecute discretamente sin estorbar en la barra de tareas.
+Código Clave: La función setup_tray_icon y el método hide_to_tray. Requiere la librería pystray.
+Notificaciones Nativas de Windows
+
+¿Qué hace? Muestra una notificación emergente en la esquina de tu pantalla 5 minutos antes de que la contraseña esté a punto de cambiarse.
+Propósito: Avisarte de forma clara y oportuna sobre un cambio inminente.
+Código Clave: La función show_notification y la lógica de tiempo dentro de run_process. Requiere la librería win10toast.
