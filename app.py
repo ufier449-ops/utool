@@ -1,40 +1,50 @@
 import subprocess
 from flask import Flask, render_template, request, jsonify
+import os
+import threading
+# Importa la función principal del worker
+from worker import trigger_immediate_change
+
+def log_startup_history():
+    history_file = 'historial_sesion.txt'
+    if os.path.exists(history_file) and os.path.getsize(history_file) > 0:
+        print("--- Contenido del historial de la sesión anterior ---")
+        with open(history_file, 'r', encoding='utf-8') as f:
+            print(f.read())
+        print("----------------------------------------------------")
+        # Limpia el historial para la nueva sesión para evitar que crezca indefinidamente
+        try:
+            os.remove(history_file)
+            open(history_file, 'w').close()
+            print("El historial de la sesión anterior ha sido mostrado y limpiado.")
+        except OSError as e:
+            print(f"Error limpiando el archivo de historial: {e}")
+
+# Registra el historial al iniciar la app (si existe)
+log_startup_history()
 
 # Inicializa la aplicación Flask
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    """Sirve la página principal."""
-    return render_template('index.html')
+    """Sirve una página de bienvenida simple."""
+    # El index.html original no es necesario para la funcionalidad del webhook
+    return "<h1>Servidor de Webhook para UnlockTool</h1><p>El endpoint está activo en /webhook.</p>"
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     """
-    Este endpoint recibe la notificación (webhook) de la pasarela de pagos.
-    Cuando se recibe una petición POST aquí, ejecuta el script de cambio de contraseña.
+    Recibe el webhook y dispara el cambio de contraseña en un hilo separado.
     """
-    print("Webhook recibido. Procesando pago...")
+    print("Webhook recibido. Disparando el proceso de cambio de contraseña en segundo plano...")
     
-    try:
-        # Ejecuta el script de Python que cambia la contraseña.
-        # Asegúrate de que 'cambiar_contrasena_unlocktool.py' esté en el mismo directorio.
-        # Se usa 'python' para asegurar que se ejecute con el intérprete correcto.
-        subprocess.run(['python', 'cambiar_contrasena_unlocktool.py'], check=True)
-        
-        print("Script ejecutado exitosamente.")
-        
-        # Responde a la pasarela de pago con un '200 OK' para confirmar la recepción.
-        return jsonify({'status': 'success'}), 200
-
-    except subprocess.CalledProcessError as e:
-        print(f"Error al ejecutar el script: {e}")
-        # Responde con un error si el script falla.
-        return jsonify({'status': 'error', 'message': 'Failed to run script'}), 500
-    except FileNotFoundError:
-        print("Error: El script 'cambiar_contrasena_unlocktool.py' no fue encontrado.")
-        return jsonify({'status': 'error', 'message': 'Script not found'}), 500
+    # Ejecuta la función del worker en un hilo para no bloquear la respuesta HTTP
+    thread = threading.Thread(target=trigger_immediate_change)
+    thread.start()
+    
+    # Responde inmediatamente a la pasarela de pago
+    return jsonify({'status': 'success', 'message': 'Password change process initiated.'}), 200
 
 if __name__ == '__main__':
     # Esto permite ejecutar la app localmente para pruebas con 'python app.py'
