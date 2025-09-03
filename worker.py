@@ -80,6 +80,12 @@ def run_password_change_flow(username: str, current_password: str, new_password:
             print(f"Navigating to login page for user: {username}")
             page.goto(LOGIN_URL)
 
+            print("Page loaded. Waiting 20 seconds for dynamic content...")
+            page.wait_for_timeout(20000) # Wait 20s for any JS challenges
+            
+            print("Dumping page content for debugging...")
+            print(page.content())
+
             page.fill("#id_username", username)
             page.fill("#id_password", current_password)
             print("Filled username and password fields.")
